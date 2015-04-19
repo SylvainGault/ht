@@ -162,7 +162,6 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 			file->seek(header_ofs + elf_shared->header32.e_shoff);
 			file->readx(elf_shared->sheaders.sheaders32, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders32);
 			for (uint i=0; i < elf_shared->sheaders.count; i++) {
-				ELF_SECTION_HEADER32 a = elf_shared->sheaders.sheaders32[i];
 				createHostStruct(elf_shared->sheaders.sheaders32+i, ELF_SECTION_HEADER32_struct, elf_shared->byte_order);
 			}
 		}
@@ -209,7 +208,6 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 		file->seek(header_ofs + elf_shared->header64.e_shoff);
 		file->readx(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
 		for (uint i=0; i < elf_shared->sheaders.count; i++) {
-			ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
 			createHostStruct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
 		}
 

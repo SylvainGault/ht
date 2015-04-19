@@ -241,18 +241,6 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			char *name = file->fgetstrz();
 			if (!name) continue;
 
-			switch (sym.st_shndx) {
-			case ELF_SHN_UNDEF:
-				break;
-			case ELF_SHN_ABS:
-				break;
-			case ELF_SHN_COMMON:
-				break;
-			default:
-				// sym.st_shndx
-				break;
-			}
-
 			const char *bind;
 			switch (ELF32_ST_BIND(sym.st_info)) {
 			case ELF_STB_LOCAL:
@@ -346,19 +334,6 @@ void ElfAnalyser::initInsertSymbols(int shidx)
 			file->seek(sto+sym.st_name);
 			char *name = file->fgetstrz();
 			if (!name) continue;
-
-			switch (sym.st_shndx) {
-			case ELF_SHN_UNDEF:
-				break;
-			case ELF_SHN_ABS:
-				break;
-			case ELF_SHN_COMMON:
-				break;
-			default: {
-				// sym.st_shndx
-				break;
-			}
-			}
 
 			const char *bind;
 			switch (ELF64_ST_BIND(sym.st_info)) {

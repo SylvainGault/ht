@@ -204,13 +204,16 @@ void ht_elf::init(Bounds *b, File *f, format_viewer_if **ifs, ht_format_group *f
 
 		/* read section headers */
 		elf_shared->sheaders.count=elf_shared->header64.e_shnum;
-		if (!elf_shared->sheaders.count) throw MsgException("Zero count for section headers");
-		elf_shared->sheaders.sheaders64 = ht_malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-		file->seek(header_ofs + elf_shared->header64.e_shoff);
-		file->readx(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
-		for (uint i=0; i < elf_shared->sheaders.count; i++) {
-			ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
-			createHostStruct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
+		if (!elf_shared->sheaders.count) {
+			elf_shared->sheaders.sheaders64 = NULL;
+		} else {
+			elf_shared->sheaders.sheaders64 = ht_malloc(elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
+			file->seek(header_ofs + elf_shared->header64.e_shoff);
+			file->readx(elf_shared->sheaders.sheaders64, elf_shared->sheaders.count*sizeof *elf_shared->sheaders.sheaders64);
+			for (uint i=0; i < elf_shared->sheaders.count; i++) {
+				ELF_SECTION_HEADER64 a = elf_shared->sheaders.sheaders64[i];
+				createHostStruct(elf_shared->sheaders.sheaders64+i, ELF_SECTION_HEADER64_struct, elf_shared->byte_order);
+			}
 		}
 
 		/* read program headers */

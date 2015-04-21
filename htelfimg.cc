@@ -86,7 +86,9 @@ static void htelfimage_segment_bounds(ElfAnalyser *analyzer, ht_elf_shared_data 
 		for (uint i = 0; i < elf_shared->pheaders.count; i++) {
 			if (elf_valid_segment((elf_program_header*)p, elfclass)) {
 				if (p->p_vaddr < l.a32) l.a32 = p->p_vaddr;
-				if ((p->p_vaddr + p->p_memsz > h.a32) && p->p_memsz) h.a32 = p->p_vaddr + p->p_memsz - 1;
+				if ((p->p_vaddr + p->p_memsz > h.a32) && p->p_memsz) {
+					h.a32 = p->p_vaddr + p->p_memsz - 1;
+				}
 			}
 			p++;
 		}

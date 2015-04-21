@@ -601,6 +601,36 @@ bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, EL
 	return false;
 }
 
+bool elf_addr_to_segment(elf_program_headers *program_headers, uint elfclass, ELFAddress addr, int *segment)
+{
+	switch (elfclass) {
+	case ELFCLASS32: {
+		ELF_PROGRAM_HEADER32 *p = program_headers->pheaders32;
+		for (uint i = 0; i < program_headers->count; i++) {
+			if ((elf_valid_segment((elf_program_header*)p, elfclass)) && (addr.a32 >= p->p_vaddr) && (addr.a32 < p->p_vaddr + p->p_memsz)) {
+				*segment = i;
+				return true;
+			}
+			p++;
+		}
+		break;
+	}
+	case ELFCLASS64: {
+		ELF_PROGRAM_HEADER64 *p = program_headers->pheaders64;
+		for (uint i = 0; i < program_headers->count; i++) {
+			if ((elf_valid_segment((elf_program_header*)p, elfclass)) && addr.a64 >= p->p_vaddr && (addr.a64 < p->p_vaddr + p->p_memsz)) {
+				*segment = i;
+				return true;
+			}
+			p++;
+		}
+		break;
+	}
+	}
+	return false;
+}
+
+// TODO never called
 bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFAddress addr)
 {
 	switch (elfclass) {

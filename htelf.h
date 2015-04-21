@@ -196,4 +196,6 @@ bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFA
 bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, FileOfs ofs, ELFAddress *addr);
 bool elf_ofs_to_section(elf_section_headers *section_headers, uint elfclass, FileOfs ofs, uint32 *section);
 
+bool elf_trustable_sections(const ht_elf_shared_data *elf_shared);
+
 #endif /* !__HTELF_H__ */

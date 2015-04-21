@@ -688,6 +688,27 @@ bool elf_ofs_to_addr_and_section(elf_section_headers *section_headers, uint elfc
 	return false;
 }
 
+bool elf_trustable_sections(const ht_elf_shared_data *elf_shared)
+{
+	uint16 type = 0;
+	uint elfclass = elf_shared->ident.e_ident[ELF_EI_CLASS];
+
+	if (elfclass == ELFCLASS32)
+		type = elf_shared->header32.e_type;
+	else if (elfclass == ELFCLASS64)
+		type = elf_shared->header64.e_type;
+
+	switch (type) {
+	case ELF_ET_REL:
+		return true;
+	case ELF_ET_EXEC:
+	case ELF_ET_DYN:
+	case ELF_ET_CORE:
+	default:
+		return false;
+	}
+}
+
 /*
  *	ht_elf32_reloc_entry
  */

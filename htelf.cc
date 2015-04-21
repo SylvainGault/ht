@@ -528,6 +528,21 @@ bool elf_valid_section(elf_section_header *sh, uint elfclass)
 	return false;
 }
 
+bool elf_valid_segment(elf_program_header *ph, uint elfclass)
+{
+	switch (elfclass) {
+	case ELFCLASS32: {
+		ELF_PROGRAM_HEADER32 *p = &ph->pheaders32;
+		return p->p_type == ELF_PT_LOAD;
+	}
+	case ELFCLASS64: {
+		ELF_PROGRAM_HEADER64 *p = &ph->pheaders64;
+		return p->p_type == ELF_PT_LOAD;
+	}
+	}
+	return false;
+}
+
 bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, FileOfs *ofs)
 {
 	switch (elfclass) {

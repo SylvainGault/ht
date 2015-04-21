@@ -111,6 +111,11 @@ struct elf_program_headers {
 	};
 };
 
+union elf_program_header {
+	ELF_PROGRAM_HEADER32 pheaders32;
+	ELF_PROGRAM_HEADER64 pheaders64;
+};
+
 struct ht_elf_reloc_section32 {
 	elf32_addr	relocAddr;
 	uint		relocShIdx;
@@ -188,6 +193,7 @@ bool isValidELFSectionIdx(ht_elf_shared_data *elf_shared, int idx);
 
 bool elf_phys_and_mem_section(elf_section_header *s, uint elfclass);
 bool elf_valid_section(elf_section_header *s, uint elfclass);
+bool elf_valid_segment(elf_program_header *s, uint elfclass);
 
 bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, int *section);
 bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, FileOfs *ofs);

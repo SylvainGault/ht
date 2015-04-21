@@ -736,47 +736,89 @@ Address *ElfAnalyser::fileofsToAddress(FileOfs fileofs)
  */
 bool ElfAnalyser::validAddress(Address *Addr, tsectype action)
 {
-	elf_section_headers *sections=&elf_shared->sheaders;
-	int sec;
+	elf_section_headers *sections = &elf_shared->sheaders;
+	elf_program_headers *segments = &elf_shared->pheaders;
+	int sec, seg;
 	byte cls = elf_shared->ident.e_ident[ELF_EI_CLASS];
 	ELFAddress ea;
+	bool addr_section;
+
 	if (!convertAddressToELFAddress(Addr, &ea)) return false;
-	if (!elf_addr_to_section(sections, cls, ea, &sec)) return false;
-	switch (cls) {
-	case ELFCLASS32: {
-		ELF_SECTION_HEADER32 *s = sections->sheaders32 + sec;
+
+	if (elf_trustable_sections(elf_shared)) {
+		if (elf_addr_to_section(sections, cls, ea, &sec))
+			addr_section = true;
+		else if (elf_addr_to_segment(segments, cls, ea, &seg))
+			addr_section = false;
+		else
+			return false;
+	} else {
+		if (elf_addr_to_segment(segments, cls, ea, &seg))
+			addr_section = false;
+		else if (elf_addr_to_section(sections, cls, ea, &sec))
+			addr_section = true;
+		else
+			return false;
+	}
+
+	if (addr_section) {
+		// Use largest types among 32 and 64 bits
+		elf64_word flags = 0;
+		uint32 type = 0;
+
+		// TODO Use a generic abstraction
+		if (cls == ELFCLASS32) {
+			ELF_SECTION_HEADER32 *s = sections->sheaders32 + sec;
+			flags = s->sh_flags;
+			type = s->sh_type;
+		} else if (cls == ELFCLASS64) {
+			ELF_SECTION_HEADER64 *s = sections->sheaders64 + sec;
+			flags = s->sh_flags;
+			type = s->sh_type;
+		}
+
 		switch (action) {
 		case scvalid:
-			return true;
 		case scread:
 			return true;
 		case scwrite:
 		case screadwrite:
-			return s->sh_flags & ELF_SHF_WRITE;
+			return flags & ELF_SHF_WRITE;
 		case sccode:
-			return (s->sh_flags & ELF_SHF_EXECINSTR) && (s->sh_type == ELF_SHT_PROGBITS);
+			return (flags & ELF_SHF_EXECINSTR) && (type == ELF_SHT_PROGBITS);
 		case scinitialized:
-			return s->sh_type==ELF_SHT_PROGBITS;
+			return type == ELF_SHT_PROGBITS;
 		}
-		return false;
-	}
-	case ELFCLASS64: {
-		ELF_SECTION_HEADER64 *s = sections->sheaders64 + sec;
+	} else {
+		uint32 flags = 0;
+		bool initialized = 0;
+
+		// TODO Use a generic abstraction
+		if (cls == ELFCLASS32) {
+			ELF_PROGRAM_HEADER32 *p = segments->pheaders32 + seg;
+			flags = p->p_flags;
+			initialized = ea.a32 < p->p_vaddr + p->p_filesz;
+		} else if (cls == ELFCLASS64) {
+			ELF_PROGRAM_HEADER64 *p = segments->pheaders64 + seg;
+			flags = p->p_flags;
+			initialized = ea.a64 < p->p_vaddr + p->p_filesz;
+		}
+
 		switch (action) {
 		case scvalid:
 			return true;
 		case scread:
-			return true;
+			return flags & ELF_PF_R;
 		case scwrite:
+			return flags & ELF_PF_W;
 		case screadwrite:
-			return s->sh_flags & ELF_SHF_WRITE;
+			return (flags & ELF_PF_R) && (flags & ELF_PF_W);
 		case sccode:
-			return (s->sh_flags & ELF_SHF_EXECINSTR) && (s->sh_type == ELF_SHT_PROGBITS);
+			return (flags & ELF_PF_X) && initialized;
 		case scinitialized:
-			return s->sh_type==ELF_SHT_PROGBITS;
+			return initialized;
 		}
-		return false;
 	}
-	}
+
 	return false;
 }

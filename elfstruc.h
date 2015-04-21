@@ -361,6 +361,7 @@ struct ELF_SECTION_HEADER64 {
  *	ELF program header
  */
 
+/* p_type */
 #define ELF_PT_NULL		0
 #define ELF_PT_LOAD		1
 #define ELF_PT_DYNAMIC		2
@@ -372,8 +373,13 @@ struct ELF_SECTION_HEADER64 {
 #define ELF_PT_NUM		8          /* Number of defined types       */
 #define ELF_PT_GNU_EH_FRAME	0x6474e550 /* GCC .eh_frame_hdr segment     */
 #define ELF_PT_GNU_STACK	0x6474e551 /* Indicates stack executability */
-#define ELF_PT_GNU_RELRO	0x6474e552 /* Read-only after relocation    */ 
-#define ELF_PT_PAX_FLAGS	0x65041580 /* Indicates PaX flag markings */
+#define ELF_PT_GNU_RELRO	0x6474e552 /* Read-only after relocation    */
+#define ELF_PT_PAX_FLAGS	0x65041580 /* Indicates PaX flag markings   */
+
+/* p_flags */
+#define ELF_PF_R	1
+#define ELF_PF_W 	2
+#define ELF_PF_X 	4
 
 struct ELF_PROGRAM_HEADER32 {
 	elf32_word p_type;

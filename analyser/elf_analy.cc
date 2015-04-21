@@ -554,7 +554,7 @@ FileOfs ElfAnalyser::addressToFileofs(Address *Addr)
 		FileOfs ofs;
 		ELFAddress ea;
 		if (!convertAddressToELFAddress(Addr, &ea)) return INVALID_FILE_OFS;
-		if (!elf_addr_to_ofs(&elf_shared->sheaders, elf_shared->ident.e_ident[ELF_EI_CLASS], ea, &ofs)) return INVALID_FILE_OFS;
+		if (!elf_addr_to_ofs(elf_shared, ea, &ofs)) return INVALID_FILE_OFS;
 		return ofs;
 	} else {
 		return INVALID_FILE_OFS;

@@ -197,7 +197,7 @@ bool elf_valid_segment(elf_program_header *s, uint elfclass);
 
 bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, int *section);
 bool elf_addr_to_segment(elf_program_headers *program_headers, uint elfclass, ELFAddress addr, int *segment);
-bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, FileOfs *ofs);
+bool elf_addr_to_ofs(ht_elf_shared_data *elf_shared, ELFAddress addr, FileOfs *ofs);
 bool elf_addr_is_valid(elf_section_headers *section_headers, uint elfclass, ELFAddress addr);
 
 bool elf_ofs_to_addr(elf_section_headers *section_headers, uint elfclass, FileOfs ofs, ELFAddress *addr);

@@ -543,33 +543,51 @@ bool elf_valid_segment(elf_program_header *ph, uint elfclass)
 	return false;
 }
 
-bool elf_addr_to_ofs(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, FileOfs *ofs)
+bool elf_addr_to_ofs(ht_elf_shared_data *elf_shared, ELFAddress addr, FileOfs *ofs)
 {
-	switch (elfclass) {
-		case ELFCLASS32: {
-			ELF_SECTION_HEADER32 *s = section_headers->sheaders32;
-			for (uint i=0; i < section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && (addr.a32 >= s->sh_addr) && (addr.a32 < s->sh_addr+s->sh_size)) {
-					*ofs = addr.a32 - s->sh_addr + s->sh_offset;
-					return true;
-				}
-				s++;
-			}
-			break;
+	int sec, seg;
+	bool addr_section;
+	uint elfclass = elf_shared->ident.e_ident[ELF_EI_CLASS];
+	elf_section_headers *section_headers = &elf_shared->sheaders;
+	elf_program_headers *program_headers = &elf_shared->pheaders;
+
+	if (elf_trustable_sections(elf_shared)) {
+		if (elf_addr_to_section(section_headers, elfclass, addr, &sec))
+			addr_section = true;
+		else if (elf_addr_to_segment(program_headers, elfclass, addr, &seg))
+			addr_section = false;
+		else
+			return false;
+	} else {
+		if (elf_addr_to_segment(program_headers, elfclass, addr, &seg))
+			addr_section = false;
+		else if (elf_addr_to_section(section_headers, elfclass, addr, &sec))
+			addr_section = true;
+		else
+			return false;
+	}
+
+	if (addr_section) {
+		// TODO Use a generic abstraction
+		if (elfclass == ELFCLASS32) {
+			ELF_SECTION_HEADER32 *s = section_headers->sheaders32 + sec;
+			*ofs = addr.a32 - s->sh_addr + s->sh_offset;
+		} else if (elfclass == ELFCLASS64) {
+			ELF_SECTION_HEADER64 *s = section_headers->sheaders64 + sec;
+			*ofs = addr.a64 - s->sh_addr + s->sh_offset;
 		}
-		case ELFCLASS64: {
-			ELF_SECTION_HEADER64 *s = section_headers->sheaders64;
-			for (uint i=0; i < section_headers->count; i++) {
-				if ((elf_phys_and_mem_section((elf_section_header*)s, elfclass)) && addr.a64 >= s->sh_addr && (addr.a64 < s->sh_addr + s->sh_size)) {
-					*ofs = addr.a64 - s->sh_addr + s->sh_offset;
-					return true;
-				}
-				s++;
-			}
-			break;
+	} else {
+		// TODO Use a generic abstraction
+		if (elfclass == ELFCLASS32) {
+			ELF_PROGRAM_HEADER32 *p = program_headers->pheaders32 + seg;
+			*ofs = addr.a32 - p->p_vaddr + p->p_offset;
+		} else if (elfclass == ELFCLASS64) {
+			ELF_PROGRAM_HEADER64 *p = program_headers->pheaders64 + seg;
+			*ofs = addr.a64 - p->p_vaddr + p->p_offset;
 		}
 	}
-	return false;
+
+	return true;
 }
 
 bool elf_addr_to_section(elf_section_headers *section_headers, uint elfclass, ELFAddress addr, int *section)
